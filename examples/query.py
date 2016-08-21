@@ -15,11 +15,12 @@ import time
 import bugzilla
 
 # public test instance of bugzilla.redhat.com. It's okay to make changes
-#URL = "partner-bugzilla.redhat.com"
-URL = "bugzilla.gnome.org"
+# URL = "partner-bugzilla.redhat.com"
+# URL = "bugzilla.gnome.org"
+URL = "bugzilla.mozilla.org"
 
 bzapi = bugzilla.Bugzilla(URL)
-
+limit = 10000
 
 # build_query is a helper function that handles some bugzilla version
 # incompatibility issues. All it does is return a properly formatted
@@ -27,17 +28,18 @@ bzapi = bugzilla.Bugzilla(URL)
 # to those accepted by XMLRPC Bug.search:
 # https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#search-bugs
 query = bzapi.build_query(
-     #product="gjs",
+    # product="gjs",
     # component="python-bugzilla"
-    #resolution="---",
-	#o1="isempty"
+    # resolution="---",
+    f1="resolution",
+    o1="isempty",
     include_fields=["id", "summary"]
-    )
+)
 
 # Since 'query' is just a dict, you could set your own parameters too, like
 # if your bugzilla had a custom field. This will set 'status' for example,
 # but for common opts it's better to use build_query
-#query["status"] = "CLOSED"
+# query["status"] = "CLOSED"
 
 # query() is what actually performs the query. it's a wrapper around Bug.search
 t1 = time.time()
@@ -45,6 +47,23 @@ bugs = bzapi.query(query)
 t2 = time.time()
 print("Found %d bugs with our query" % len(bugs))
 print("Query processing time: %s" % (t2 - t1))
+
+query = bzapi.build_query(
+    # product="gjs",
+    # component="python-bugzilla"
+    # resolution="---",
+    f1="resolution",
+    o1="isnotempty",
+    limit=limit,
+    offset=0,
+    include_fields=["id", "summary"]
+)
+result_count = limit
+while result_count == limit:
+    bugs = bzapi.query(query)
+    result_count = len(bugs)
+    print("Found %d bugs with our query" % len(bugs))
+    query["offset"] += limit
 
 
 # Depending on the size of your query, you can massively speed things up
@@ -54,14 +73,14 @@ print("Query processing time: %s" % (t2 - t1))
 # https://wiki.mozilla.org/Bugzilla:BzAPI#Field_Control
 # Bugzilla will only return those fields listed in include_fields.
 
-#query = bzapi.build_query(
+# query = bzapi.build_query(
 #    product="Fedora",
 #    component="python-bugzilla",
 #    include_fields=["id", "summary"])
-#t1 = time.time()
-#bugs = bzapi.query(query)
-#t2 = time.time()
-#print("Quicker query processing time: %s" % (t2 - t1))
+# t1 = time.time()
+# bugs = bzapi.query(query)
+# t2 = time.time()
+# print("Quicker query processing time: %s" % (t2 - t1))
 
 
 # bugzilla.redhat.com, and bugzilla >= 5.0 support queries using the same
@@ -76,13 +95,13 @@ print("Query processing time: %s" % (t2 - t1))
 #
 # Run that, copy the URL and bring it here, pass it to url_to_query to
 # convert it to a dict(), and query as usual
-#query = bzapi.url_to_query("https://partner-bugzilla.redhat.com/"
+# query = bzapi.url_to_query("https://partner-bugzilla.redhat.com/"
 #    "buglist.cgi?classification=Fedora&component=python-bugzilla&"
 #    "f1=creation_ts&o1=lessthaneq&order=Importance&product=Fedora&"
 #    "query_format=advanced&v1=2010-01-01")
-#query["include_fields"] = ["id", "summary"]
-#bugs = bzapi.query(query)
-#print("The URL query returned 22 bugs... "
+# query["include_fields"] = ["id", "summary"]
+# bugs = bzapi.query(query)
+# print("The URL query returned 22 bugs... "
 #      "I know that without even checking because it shouldn't change!... "
 #      "(count is %d)" % len(bugs))
 

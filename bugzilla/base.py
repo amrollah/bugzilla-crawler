@@ -30,11 +30,9 @@ else:
     from urlparse import urlparse, parse_qsl
     from xmlrpclib import Binary, Fault
 
-
 from .apiversion import __version__
 from .bug import Bug, User
 from .transport import BugzillaError, _BugzillaServerProxy, _RequestsTransport
-
 
 log = getLogger(__name__)
 
@@ -124,6 +122,7 @@ class _FieldAlias(object):
         (like the query example)
     @is_bug: If True, use this mapping for Bug attribute names.
     """
+
     def __init__(self, newname, oldname, is_api=True, is_bug=True):
         self.newname = newname
         self.oldname = oldname
@@ -136,6 +135,7 @@ class _BugzillaAPICache(object):
     Helper class that holds cached API results for things like products,
     components, etc.
     """
+
     def __init__(self):
         self.products = []
         self.bugfields = []
@@ -305,7 +305,7 @@ class Bugzilla(object):
                 extensions = self._proxy.Bugzilla.extensions()
                 if "RedHat" in extensions.get('extensions', {}):
                     log.info("Found RedHat bugzilla extension, "
-                        "using RHBugzilla")
+                             "using RHBugzilla")
                     c = RHBugzilla
             except Fault:
                 log.debug("Failed to fetch bugzilla extensions", exc_info=True)
@@ -346,6 +346,7 @@ class Bugzilla(object):
 
     def _get_user_agent(self):
         return 'python-bugzilla/%s' % __version__
+
     user_agent = property(_get_user_agent)
 
 
@@ -394,7 +395,6 @@ class Bugzilla(object):
     def _get_api_aliases(self):
         return [(f.newname, f.oldname)
                 for f in self._field_aliases if f.is_api]
-
 
     ###################
     # Cookie handling #
@@ -445,7 +445,7 @@ class Bugzilla(object):
 
         section = ""
         log.debug("bugzillarc: Searching for config section matching %s",
-            self.url)
+                  self.url)
         for s in sorted(cfg.sections()):
             # Substring match - prefer the longest match found
             if s in self.url:
@@ -472,7 +472,7 @@ class Bugzilla(object):
                 int(i) for i in version.split(".")[0:2]]
         except:
             log.debug("version doesn't match expected format X.Y.Z, "
-                    "assuming 5.0", exc_info=True)
+                      "assuming 5.0", exc_info=True)
             self.bz_ver_major = 5
             self.bz_ver_minor = 0
 
@@ -497,7 +497,7 @@ class Bugzilla(object):
             url, self._cookiejar, sslverify=self._sslverify)
         self._transport.user_agent = self.user_agent
         self._proxy = _BugzillaServerProxy(url, self.tokenfile,
-            self._transport)
+                                           self._transport)
 
         self.url = url
         # we've changed URLs - reload config
@@ -518,7 +518,6 @@ class Bugzilla(object):
         self._proxy = None
         self._transport = None
         self._cache = _BugzillaAPICache()
-
 
     def _login(self, user, password):
         '''Backend login method for Bugzilla3'''
@@ -616,7 +615,6 @@ class Bugzilla(object):
                 return False
             raise e
 
-
     #############################################
     # Fetching info about the bugzilla instance #
     #############################################
@@ -641,9 +639,9 @@ class Bugzilla(object):
             log.debug("bugfields = %s", self._cache.bugfields)
 
         return self._cache.bugfields
+
     bugfields = property(fget=lambda self: self.getbugfields(),
                          fdel=lambda self: setattr(self, '_bugfields', None))
-
 
     def refresh_products(self, **kwargs):
         """
@@ -654,7 +652,7 @@ class Bugzilla(object):
             added = False
             for current in self._cache.products[:]:
                 if (current.get("id", -1) != product.get("id", -2) and
-                    current.get("name", -1) != product.get("name", -2)):
+                            current.get("name", -1) != product.get("name", -2)):
                     continue
 
                 self._cache.products.remove(current)
@@ -678,7 +676,6 @@ class Bugzilla(object):
 
     products = property(fget=lambda self: self.getproducts(),
                         fdel=lambda self: setattr(self, '_products', None))
-
 
     def getcomponentsdetails(self, product, force_refresh=False):
         '''Returns a dict of dicts, containing detailed component information
@@ -733,7 +730,6 @@ class Bugzilla(object):
             data["names"] = [names]
             data["updates"] = updates
 
-
     def addcomponent(self, data):
         '''
         A method to create a component in Bugzilla. Takes a dict, with the
@@ -767,7 +763,6 @@ class Bugzilla(object):
         self._component_data_convert(data, update=True)
         log.debug("Calling Component.update with: %s", data)
         return self._proxy.Component.update(data)
-
 
     def _getproductinfo(self, ids=None, names=None,
                         include_fields=None, exclude_fields=None):
@@ -851,7 +846,6 @@ class Bugzilla(object):
             ret.append(row)
         return ret
 
-
     ###################
     # getbug* methods #
     ###################
@@ -861,6 +855,7 @@ class Bugzilla(object):
         """
         Internal helper to process include_fields lists
         """
+
         def _convert_fields(_in):
             if not _in:
                 return _in
@@ -897,6 +892,7 @@ class Bugzilla(object):
 
     def _set_bug_autorefresh(self, val):
         self._bug_autorefresh = bool(val)
+
     bug_autorefresh = property(_get_bug_autorefresh, _set_bug_autorefresh)
 
 
@@ -909,7 +905,7 @@ class Bugzilla(object):
     _supports_getbug_extra_fields = False
 
     def _getbugs(self, idlist, permissive,
-            include_fields=None, exclude_fields=None, extra_fields=None):
+                 include_fields=None, exclude_fields=None, extra_fields=None):
         '''
         Return a list of dicts of full bug info for each given bug id.
         bug ids that couldn't be found will return None instead of a dict.
@@ -973,8 +969,8 @@ class Bugzilla(object):
         '''Return a Bug object with the full complement of bug data
         already loaded.'''
         data = self._getbug(objid,
-            include_fields=include_fields, exclude_fields=exclude_fields,
-            extra_fields=extra_fields)
+                            include_fields=include_fields, exclude_fields=exclude_fields,
+                            extra_fields=extra_fields)
         return Bug(self, dict=data, autorefresh=self.bug_autorefresh)
 
     def getbugs(self, idlist,
@@ -984,8 +980,8 @@ class Bugzilla(object):
         already loaded. If there's a problem getting the data for a given id,
         the corresponding item in the returned list will be None.'''
         data = self._getbugs(idlist, include_fields=include_fields,
-            exclude_fields=exclude_fields, extra_fields=extra_fields,
-            permissive=permissive)
+                             exclude_fields=exclude_fields, extra_fields=extra_fields,
+                             permissive=permissive)
         return [(b and Bug(self, dict=b,
                            autorefresh=self.bug_autorefresh)) or None
                 for b in data]
@@ -994,7 +990,6 @@ class Bugzilla(object):
         '''Returns a dictionary of bugs and comments.  The comments key will
            be empty.  See bugzilla docs for details'''
         return self._proxy.Bug.comments({'ids': idlist})
-
 
     #################
     # query methods #
@@ -1039,7 +1034,12 @@ class Bugzilla(object):
                     sub_component=None,
                     tags=None,
                     exclude_fields=None,
-                    extra_fields=None):
+                    extra_fields=None,
+                    resolution=None,
+                    f1=None,
+                    o1=None,
+                    limit=None,
+                    offset=None):
         """
         Build a query string from passed arguments. Will handle
         query parameter differences between various bugzilla versions.
@@ -1055,11 +1055,16 @@ class Bugzilla(object):
         """
         if boolean_query or booleantype:
             raise RuntimeError("boolean_query format is no longer supported. "
-                "If you need complicated URL queries, look into "
-                "query --from-url/url_to_query().")
+                               "If you need complicated URL queries, look into "
+                               "query --from-url/url_to_query().")
 
         query = {
             "alias": alias,
+            "resolution": resolution,
+            "f1": f1,
+            "o1": o1,
+            "limit":limit,
+            "offset":offset,
             "product": self._listify(product),
             "component": self._listify(component),
             "version": version,
@@ -1144,7 +1149,7 @@ class Bugzilla(object):
         # Strip out None elements in the dict
         for k, v in query.copy().items():
             if v is None:
-                del(query[k])
+                del (query[k])
 
         self.pre_translation(query)
         return query
@@ -1165,16 +1170,16 @@ class Bugzilla(object):
             # Try to give a hint in the error message if url_to_query
             # isn't supported by this bugzilla instance
             if ("query_format" not in str(e) or
-                "RHBugzilla" in str(e.__class__) or
-                self._check_version(5, 0)):
+                        "RHBugzilla" in str(e.__class__) or
+                    self._check_version(5, 0)):
                 raise
             raise BugzillaError("%s\nYour bugzilla instance does not "
-                "appear to support API queries derived from bugzilla "
-                "web URL queries." % e)
+                                "appear to support API queries derived from bugzilla "
+                                "web URL queries." % e)
 
         log.debug("Query returned %s bugs", len(r['bugs']))
         return [Bug(self, dict=b,
-                autorefresh=self.bug_autorefresh) for b in r['bugs']]
+                    autorefresh=self.bug_autorefresh) for b in r['bugs']]
 
     def pre_translation(self, query):
         '''In order to keep the API the same, Bugzilla4 needs to process the
@@ -1194,7 +1199,6 @@ class Bugzilla(object):
         particular bugs in the database.
         '''
         return self._proxy.Bug.history({'ids': bug_ids})
-
 
     #######################################
     # Methods for modifying existing bugs #
@@ -1244,7 +1248,6 @@ class Bugzilla(object):
 
         log.debug("Calling Bug.update_tags with: %s", d)
         return self._proxy.Bug.update_tags(d)
-
 
     def build_update(self,
                      alias=None,
@@ -1339,7 +1342,6 @@ class Bugzilla(object):
                 newdict["set"] = c(_set)
             ret[key] = newdict
 
-
         s("alias", alias)
         s("assigned_to", assigned_to)
         s("is_cc_accessible", is_cc_accessible, bool)
@@ -1382,7 +1384,6 @@ class Bugzilla(object):
                 ret["comment"]["is_private"] = comment_private
 
         return ret
-
 
     ########################################
     # Methods for working with attachments #
@@ -1467,7 +1468,6 @@ class Bugzilla(object):
             ret = ret[0]
         return ret
 
-
     def openattachment(self, attachid):
         '''Get the contents of the attachment with the given attachment ID.
         Returns a file-like object.'''
@@ -1487,7 +1487,7 @@ class Bugzilla(object):
 
         defaults = self._transport.request_defaults.copy()
         defaults["headers"] = defaults["headers"].copy()
-        del(defaults["headers"]["Content-Type"])
+        del (defaults["headers"]["Content-Type"])
 
         response = self._transport.session.get(
             att_uri, stream=True, **defaults)
@@ -1520,7 +1520,6 @@ class Bugzilla(object):
             'updates': [update]})
         return result['flag_updates'][str(bugid)]
 
-
     #####################
     # createbug methods #
     #####################
@@ -1529,30 +1528,31 @@ class Bugzilla(object):
                           'description')
 
     def build_createbug(self,
-        product=None,
-        component=None,
-        version=None,
-        summary=None,
-        description=None,
-        comment_private=None,
-        blocks=None,
-        cc=None,
-        assigned_to=None,
-        keywords=None,
-        depends_on=None,
-        groups=None,
-        op_sys=None,
-        platform=None,
-        priority=None,
-        qa_contact=None,
-        resolution=None,
-        severity=None,
-        status=None,
-        target_milestone=None,
-        target_release=None,
-        url=None,
-        sub_component=None,
-        alias=None):
+                        product=None,
+                        component=None,
+                        version=None,
+                        summary=None,
+                        description=None,
+                        comment_private=None,
+                        blocks=None,
+                        cc=None,
+                        assigned_to=None,
+                        keywords=None,
+                        depends_on=None,
+                        groups=None,
+                        op_sys=None,
+                        platform=None,
+                        priority=None,
+                        qa_contact=None,
+                        resolution=None,
+                        severity=None,
+                        status=None,
+                        target_milestone=None,
+                        target_release=None,
+                        url=None,
+                        sub_component=None,
+                        alias=None
+                        ):
 
         localdict = {}
         if blocks:
@@ -1573,13 +1573,13 @@ class Bugzilla(object):
         # Most of the machinery and formatting here is the same as
         # build_update, so reuse that as much as possible
         ret = self.build_update(product=product, component=component,
-                version=version, summary=summary, op_sys=op_sys,
-                platform=platform, priority=priority, qa_contact=qa_contact,
-                resolution=resolution, severity=severity, status=status,
-                target_milestone=target_milestone,
-                target_release=target_release, url=url,
-                assigned_to=assigned_to, sub_component=sub_component,
-                alias=alias)
+                                version=version, summary=summary, op_sys=op_sys,
+                                platform=platform, priority=priority, qa_contact=qa_contact,
+                                resolution=resolution, severity=severity, status=status,
+                                target_milestone=target_milestone,
+                                target_release=target_release, url=url,
+                                assigned_to=assigned_to, sub_component=sub_component,
+                                alias=alias)
 
         ret.update(localdict)
         return ret
@@ -1604,13 +1604,13 @@ class Bugzilla(object):
         # new fieldname instead.
         for newname, oldname in self._get_api_aliases():
             if (newname in self.createbug_required and
-                newname not in data and
-                oldname in data):
+                        newname not in data and
+                        oldname in data):
                 data[newname] = data.pop(oldname)
 
         # Back compat handling for check_args
         if "check_args" in data:
-            del(data["check_args"])
+            del (data["check_args"])
 
         return data
 
@@ -1626,7 +1626,6 @@ class Bugzilla(object):
         rawbug = self._proxy.Bug.create(data)
         return Bug(self, bug_id=rawbug["id"],
                    autorefresh=self.bug_autorefresh)
-
 
     ##############################
     # Methods for handling Users #
@@ -1691,7 +1690,6 @@ class Bugzilla(object):
                     break
         ret += userobjs
         return ret
-
 
     def searchusers(self, pattern):
         '''Return a bugzilla User for the given list of patterns
