@@ -17,6 +17,7 @@ bugzilla/oldclasses.py
 bugzilla/rhbugzilla.py
 bugzilla/transport.py
 examples/bug_autorefresh.py
+examples/crawler.py
 examples/getbug.py
 examples/query.py
 examples/update.py

@@ -5,7 +5,10 @@
 # the full text of the license.
 
 from logging import getLogger
+import random
 import sys
+
+from bugzilla.user_agent_list import user_agents
 
 if hasattr(sys.version_info, "major") and sys.version_info.major >= 3:
     # pylint: disable=import-error,no-name-in-module
@@ -79,7 +82,7 @@ class _BugzillaServerProxy(ServerProxy):
     def _ServerProxy__request(self, methodname, params):
         if self.token.value is not None:
             if len(params) == 0:
-                params = ({}, )
+                params = ({},)
 
             if 'Bugzilla_token' not in params[0]:
                 params[0]['Bugzilla_token'] = self.token.value
@@ -94,7 +97,7 @@ class _BugzillaServerProxy(ServerProxy):
 
 
 class _RequestsTransport(Transport):
-    user_agent = 'Python/Bugzilla'
+    user_agent = user_agents[random.randint(0, len(user_agents) - 1)] #'Python/Bugzilla'
 
     def __init__(self, url, cookiejar=None,
                  sslverify=True, sslcafile=None, debug=0):
@@ -143,7 +146,8 @@ class _RequestsTransport(Transport):
         response = None
         try:
             response = self.session.post(
-                url, data=request_body, **self.request_defaults)
+                url, data=request_body, proxies=dict(http='socks5://127.0.0.1:9050', https='socks5://127.0.0.1:9050'),
+                **self.request_defaults)
 
             # We expect utf-8 from the server
             response.encoding = 'UTF-8'
@@ -176,8 +180,8 @@ class _RequestsTransport(Transport):
     def request(self, host, handler, request_body, verbose=0):
         self.verbose = verbose
         url = "%s://%s%s" % (self.scheme, host, handler)
-
+        # print(url)
         # xmlrpclib fails to escape \r
         request_body = request_body.replace(b'\r', b'&#xd;')
-
+        # print(request_body)
         return self._request_helper(url, request_body)

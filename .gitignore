@@ -9,3 +9,5 @@ build
 #python-bugzilla venvs
 dev-env*
 .idea/*
+examples/mozilla.db
+test.py

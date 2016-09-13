@@ -9,61 +9,129 @@
 # query.py: Perform a few varieties of queries
 
 from __future__ import print_function
+import datetime
 
-import time
-
+import win_inet_pton
 import bugzilla
+from crawler import Instances
 
 # public test instance of bugzilla.redhat.com. It's okay to make changes
 # URL = "partner-bugzilla.redhat.com"
-# URL = "bugzilla.gnome.org"
 URL = "bugzilla.mozilla.org"
+URL = "bugzilla.redhat.com"
+URL = "bugzilla.novell.com"
+URL = "bugzilla.kernel.org"
+URL = "bugzilla.gnome.org"
+URL = "bugs.kde.org"
+URL = "bugs.gentoo.org"
+URL = "bugs.freedesktop.org"
+URL = "bugzilla.xfce.org"
+URL = "bugs.documentfoundation.org"
+URL = "issues.openmandriva.org"
+URL = "bugzilla.suse.com"
+URL = "bugs.mageia.org"
+URL = "http://bugzilla.dre.vanderbilt.edu"
+URL = "chess.eecs.berkeley.edu/bugzilla/xmlrpc.cgi"
+URL = "gcc.gnu.org/bugzilla/xmlrpc.cgi"
+URL = "bz.apache.org/bugzilla/xmlrpc.cgi"
+URL = "bugs.eclipse.org/bugs/xmlrpc.cgi"
+URL = "bz.apache.org/ooo/xmlrpc.cgi"
+URL = "bugs.winehq.org"
 
-bzapi = bugzilla.Bugzilla(URL)
-limit = 10000
+
+limit = 10
 
 # build_query is a helper function that handles some bugzilla version
 # incompatibility issues. All it does is return a properly formatted
 # dict(), and provide friendly parameter names. The param names map
 # to those accepted by XMLRPC Bug.search:
 # https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#search-bugs
-query = bzapi.build_query(
-    # product="gjs",
-    # component="python-bugzilla"
-    # resolution="---",
-    f1="resolution",
-    o1="isempty",
-    include_fields=["id", "summary"]
-)
+bug_common_fields = None
+cmt_common_fields = None
+for inst in Instances:
+    print("$$$$$$$$$$$$  ",  inst['name'], "  $$$$$$$$$$$$$$$")
+    bzapi = bugzilla.Bugzilla(inst['URL'])
+    query = bzapi.build_query(
+        # resolution="FIXED",
+        status=inst['states'][-1],
+        limit=limit,
+        offset=0,
+        include_fields=['classification', 'creator', 'depends_on', 'creation_time', 'is_open', 'keywords', 'id', 'severity', 'is_confirmed', 'priority', 'platform', 'version', 'status', 'product', 'component', 'url', 'summary', 'assigned_to', 'resolution', 'last_change_time']
+    )
+    # print(inst['states'][-1])
+    bugs = bzapi.query(query)
+    # print("Found %d bugs with our query" % len(bugs))
+    if len(bugs) > 0:
+        print(bugs[0].__dict__)
+        print(type(datetime.datetime(bugs[0].creation_time)))
+        # if not bug_common_fields:
+        #     bug_common_fields = bugs[0]._bug_fields
+        # else:
+        #     bug_common_fields = list(set(bug_common_fields).intersection(bugs[0]._bug_fields))
+        # print(bug_common_fields)
+        comms = bugs[0].getcomments()
+        if len(comms)>0:
+        # print("Found %d comments for first bug" %len(comms))
+            print(comms[0])
+            # if not cmt_common_fields:
+            #     cmt_common_fields = comms[0].keys()
+            # else:
+            #     cmt_common_fields = list(set(cmt_common_fields).intersection(comms[0].keys()))
+            # print(cmt_common_fields)
+        else:
+            print("NO Comment! ERROR...")
+            # exit()
+    else:
+        print("NO Bug! ERROR...")
+        # exit()
 
+# print(bug_common_fields)
+# print(cmt_common_fields)
+
+#todo: check the category in the json of bug.
 # Since 'query' is just a dict, you could set your own parameters too, like
 # if your bugzilla had a custom field. This will set 'status' for example,
 # but for common opts it's better to use build_query
 # query["status"] = "CLOSED"
 
+# {'count': 7, 'author': 'marja11@xs4all.nl', 'text': 'Mass-reassigning all bugs with "kernel" in the Source RPM field that are assigned to tmb, to the kernel packagers group, because tmb is currently MIA.', 'creator': 'marja11@xs4all.nl', 'creation_time': <DateTime '20160826T09:42:38' at 4c28d00>, 'bug_id': 16759, 'time': <DateTime '20160826T09:42:38' at 4c28558>, 'id': 164363, 'is_private': False}
 # query() is what actually performs the query. it's a wrapper around Bug.search
-t1 = time.time()
-bugs = bzapi.query(query)
-t2 = time.time()
-print("Found %d bugs with our query" % len(bugs))
-print("Query processing time: %s" % (t2 - t1))
+# t1 = time.time()
+# bugs = bzapi.query(query)
+# t2 = time.time()
+# print("Found %d bugs with our query" % len(bugs))
+# # print("Query processing time: %s" % (t2 - t1))
+# if len(bugs) > 0:
+#     # unicode(bugs[0])
+#     print(bugs[0]._bug_fields)
+#     # for field in bugs[0].__dict__:
+#     #     print('"'+ field + '": ' + str(bugs[0].__dict__[field]))
+#     comms = bugs[0].getcomments()
+#     print("Found %d comments for first bug" %len(comms))
+#     # print(bugs[0])
+#     print(comms[0])
+#
+#     # for bug in bugs:
+#     #     comms = bug.getcomments()
+#     #     for cmt in comms:
+#     #         print(cmt)
 
-query = bzapi.build_query(
-    # product="gjs",
-    # component="python-bugzilla"
-    # resolution="---",
-    f1="resolution",
-    o1="isnotempty",
-    limit=limit,
-    offset=0,
-    include_fields=["id", "summary"]
-)
-result_count = limit
-while result_count == limit:
-    bugs = bzapi.query(query)
-    result_count = len(bugs)
-    print("Found %d bugs with our query" % len(bugs))
-    query["offset"] += limit
+# query = bzapi.build_query(
+#     # product="gjs",
+#     # component="python-bugzilla"
+#     # resolution="---",
+#     f1="resolution",
+#     o1="isnotempty",
+#     limit=limit,
+#     offset=0,
+#     include_fields=["id", "summary"]
+# )
+# result_count = limit
+# while result_count == limit:
+#     bugs = bzapi.query(query)
+#     result_count = len(bugs)
+#     print("Found %d bugs with our query" % len(bugs))
+#     query["offset"] += limit
 
 
 # Depending on the size of your query, you can massively speed things up
