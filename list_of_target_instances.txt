@@ -1,0 +1,26 @@
+1	Mozilla: https://bugzilla.mozilla.org/   -> f1="resolution", o1="isempty", o1="isnotempty",  (UNCONFIRMED,NEW,ASSIGNED,ASSIGNED,RESOLVED,VERIFIED,CLOSED)
+2	Linux Kernel: http://bugzilla.kernel.org/ -> Status: NEW,ASSIGNED, REOPENED, RESOLVED, VERIFIED, REJECTED, DEFERRED, CLOSED
+3	GNOME: http://bugzilla.gnome.org/ -> Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, NEEDINFO, RESOLVED, VERIFIED
+4	KDE: http://bugs.kde.org/ -> Status: UNCONFIRMED, CONFIRMED, ASSIGNED, REOPENED, RESOLVED, NEEDSINFO VERIFIED, CLOSED
+18  Apache Project: https://bz.apache.org/bugzilla/xmlrpc.cgi -> Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, NEEDINFO, RESOLVED, VERIFIED, CLOSED
+5	LibreOffice: https://bugs.documentfoundation.org/ Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, NEEDINFO, RESOLVED, VERIFIED, CLOSED, PLEASETEST
+20  Open Office: https://bz.apache.org/ooo/ -> Status: UNCONFIRMED, CONFIRMED, ACCEPTED, REOPENED, RESOLVED, VERIFIED, CLOSED
+19  Eclipse: http://bugs.eclipse.org/bugs/xmlrpc.cgi ->  Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, RESOLVED, VERIFIED, CLOSED
+6	Red Hat: https://bugzilla.redhat.com/  -> Status: NEW, VERIFIED, ASSIGNED, MODIFIED, ON_DEV, ON_QA, RELEASE_PENDING, POST
+7	Gentoo: http://bugs.gentoo.org/ -> Status: UNCONFIRMED, CONFIRMED, VERIFIED, RESOLVED, IN_PROGRESS
+8	Novell: https://bugzilla.novell.com/  -> Status: UNCONFIRMED, NEW, CONFIRMED, IN_PROGRESS, REOPENED, RESOLVED, VERIFIED
+9	X.org: bugs.freedesktop.org (Bugzilla) -> Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, NEEDINFO, RESOLVED, VERIFIED, CLOSED, PLEASETEST
+10	XFCE: bugzilla.xfce.org (Bugzilla) -> Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, NEEDINFO, RESOLVED, VERIFIED, CLOSED
+17  GCC: gcc.gnu.org/bugzilla/xmlrpc.cgi (Bugzilla) -> Status: UNCONFIRMED, NEW, ASSIGNED, SUSPENDED, WAITING, REOPENED, RESOLVED, VERIFIED, CLOSED
+11	Mandriva: issues.openmandriva.org (Bugzilla) -> Status: UNCONFIRMED, ACKED, NEEDINFO, CONFIRMED, IN_PROGRESS, RESOLVED, VERIFIED
+12	SuSE Linux: bugzilla.suse.com (Bugzilla) -> Status: UNCONFIRMED, NEW, CONFIRMED, IN_PROGRESS, REOPENED, RESOLVED, VERIFIED
+13	Wine: bugs.winehq.org (Bugzilla) -> Status: UNCONFIRMED, NEW, ASSIGNED, STAGED, NEEDINFO, REOPENED, RESOLVED, CLOSED
+•	!!!!!!!!!! Molecular Graphics Laboratory, Scripps University (Bugzilla): http://mgldev.scripps.edu/bugs/ -> Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, RESOLVED, VERIFIED, CLOSED
+•	####OLD version######## Lyx (Bugzilla)
+14	Center for Hybrid and Embedded Software Systems, University of Berkeley (Bugzilla): https://chess.eecs.berkeley.edu/bugzilla/xmlrpc.cgi -> Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, RESOLVED, VERIFIED, CLOSED
+15	Center for Distributed Object Computing, Washington University at St. Louis (Bugzilla): http://bugzilla.dre.vanderbilt.edu -> Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, RESOLVED, VERIFIED, CLOSED
+•	#####OLD version#### AbiWord (Bugzilla): http://bugzilla.abisource.com/ -> Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, RESOLVED, VERIFIED, CLOSED
+16	Mageia (Bugzilla): bugs.mageia.org -> Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, RESOLVED, VERIFIED
+•	######discountinued##### OpenSolaris (Bugzilla)
+•	!!!!!!!!XML-RPC not available!!!!!!!!! OpenSSH (Bugzilla): bugzilla.mindrot.org -> Status: UNCONFIRMED, NEW, ASSIGNED, REOPENED, RESOLVED, VERIFIED, CLOSED
+

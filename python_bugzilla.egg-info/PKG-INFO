@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: python-bugzilla
+Version: 1.2.2
+Summary: Bugzilla XMLRPC access module
+Home-page: https://github.com/python-bugzilla/python-bugzilla
+Author: Cole Robinson
+Author-email: python-bugzilla@lists.fedorahosted.org
+License: GPLv2
+Description: UNKNOWN
+Platform: UNKNOWN
