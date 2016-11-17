@@ -208,6 +208,8 @@ if __name__ == "__main__":
     instance_id = 0
     instance = Instances[instance_id]
     db_path = "{0}.db".format(instance["name"])
+    clean = True
+    if os.path.exists(db_path) and os.path.getsize("{0}\{1}".format(os.path.dirname(os.path.abspath(__file__)),db_path))>0:
     clean = False
     skip_states = True
     limit = MAX_NUM_RESULT  # to get all available rows of results (until 10000)
@@ -224,6 +226,7 @@ if __name__ == "__main__":
                 break
             offset = 0
             iteration = 1
+            retry = 0
             while True:
                 query = bzapi.build_query(
                     status=state,
@@ -235,6 +238,7 @@ if __name__ == "__main__":
                 try:
                     bugs = bzapi.query(query)
                     bug_load_error = False
+                    retry = 0
                 except Exception, e:
                     logging.exception(repr(e))
                     bug_load_error = True
