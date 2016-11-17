@@ -12,7 +12,7 @@ import os
 
 Instances = [
     {"name": "mozilla", "URL": "bugzilla.mozilla.org",
-     "states": ["UNCONFIRMED", "NEW", "ASSIGNED", "ASSIGNED", "RESOLVED", "VERIFIED", "CLOSED"]},
+     "states": ["UNCONFIRMED", "NEW", "ASSIGNED", "REOPENED", "RESOLVED", "VERIFIED", "CLOSED"]},
     {"name": "redhat", "URL": "bugzilla.redhat.com",
      "states": ["NEW", "VERIFIED", "ASSIGNED", "MODIFIED", "ON_DEV", "ON_QA", "RELEASE_PENDING", "POST"]},
     {"name": "kernel", "URL": "bugzilla.kernel.org",
@@ -98,10 +98,13 @@ def get_database_bugzilla(db_name):
 
 def renew_ip():
     print('getting new ip ...')
-    with Controller.from_port(port=9040) as controller:
-        controller.authenticate(password="123456")
-        controller.signal(Signal.NEWNYM)
-        sleep(random.randint(3, 7))
+    try:
+        with Controller.from_port(port=9040) as controller:
+            controller.authenticate(password="123456")
+            controller.signal(Signal.NEWNYM)
+            sleep(random.randint(3, 7))
+    except Exception, e:
+        logging.exception(repr(e))
 
 
 def convert_date(date):
@@ -182,16 +185,32 @@ def get_or_create_user(user):
         return False
 
 
+def get_faild_bugs():
+    try:
+        cur = conn.cursor()
+        cur.execute('SELECT id FROM bugs WHERE id NOT IN (SELECT DISTINCT bug_id FROM comments)')
+        res = cur.fetchall()
+        return res
+    except Exception, e:
+        logging.exception(repr(e))
+        return False
+
+
 MAX_NUM_RESULT = 10000
 global conn
+include_fields = ['classification', 'creator', 'depends_on', 'creation_time', 'is_open',
+                  'id', 'severity', 'is_confirmed', 'priority', 'platform', 'version', 'status',
+                  'product', 'component', 'url', 'assigned_to', 'resolution',
+                  'last_change_time']
 
 if __name__ == "__main__":
     conn = None
     instance_id = 0
     instance = Instances[instance_id]
     db_path = "{0}.db".format(instance["name"])
-    clean = True
-    limit = min(0, MAX_NUM_RESULT)  # to get all available rows of results (until 10000)
+    clean = False
+    skip_states = True
+    limit = MAX_NUM_RESULT  # to get all available rows of results (until 10000)
     try:
         if clean:
             conn = get_database_bugzilla(db_path)
@@ -201,31 +220,39 @@ if __name__ == "__main__":
         print("###########  ", instance['name'], "  #############")
         bzapi = bugzilla.Bugzilla(instance['URL'])
         for state in instance['states']:
+            if skip_states:
+                break
             offset = 0
             iteration = 1
             while True:
                 query = bzapi.build_query(
                     status=state,
                     limit=limit,
-                    offset=offset,
-                    include_fields=['classification', 'creator', 'depends_on', 'creation_time', 'is_open', 'keywords',
-                                    'id', 'severity', 'is_confirmed', 'priority', 'platform', 'version', 'status',
-                                    'product', 'component', 'url', 'summary', 'assigned_to', 'resolution',
-                                    'last_change_time']
+                    offset=(offset + 2 * MAX_NUM_RESULT) if state == "NEW" else offset,
+                    include_fields=include_fields
                 )
-                bugs = bzapi.query(query)
+                bugs = []
+                try:
+                    bugs = bzapi.query(query)
+                    bug_load_error = False
+                except Exception, e:
+                    logging.exception(repr(e))
+                    bug_load_error = True
                 print("Found {0} bugs in iteration {1}".format(len(bugs), iteration))
                 for bug in bugs:
-                    success_bug = create_bug(bug)
-                    if success_bug:
-                        comments = bug.getcomments()
-                        print("Found {0} comments for bug {1}".format(len(comments), bug.id))
-                        for comment in comments:
-                            user = {"username": comment["creator"]}
-                            success = get_or_create_user(user)
-                            create_comment(comment, bug, user if success else {})
-                if max(offset, limit) > 900:
-                    renew_ip()
+                    try:
+                        success_bug = create_bug(bug)
+                        if success_bug:
+                            comments = bug.getcomments()
+                            print("Found {0} comments for bug {1}".format(len(comments), bug.id))
+                            for comment in comments:
+                                user = {"username": comment["creator"]}
+                                success = get_or_create_user(user)
+                                create_comment(comment, bug, user if success else {})
+                    except Exception, e:
+                        logging.exception(repr(e))
+                # if max(offset, limit) > 900:
+                #     renew_ip()
                 if limit != 0 and len(bugs) == limit:
                     offset += limit
                     iteration += 1
@@ -234,6 +261,21 @@ if __name__ == "__main__":
                     iteration += 1
                 else:
                     break
+        # find the bugs with missing comments
+        idlist = [bug[0] for idx, bug in enumerate(get_faild_bugs())]
+        bugs = bzapi.getbugs(idlist,
+                             include_fields=include_fields)
+        print("Found {0} bugs without comment.".format(len(idlist)))
+        for bug in bugs:
+            try:
+                comments = bug.getcomments()
+                print("Found {0} comments for bug {1}".format(len(comments), bug.id))
+                for comment in comments:
+                    user = {"username": comment["creator"]}
+                    success = get_or_create_user(user)
+                    create_comment(comment, bug, user if success else {})
+            except Exception, e:
+                logging.exception(repr(e))
 
     except Exception, e:
         logging.exception(repr(e))
